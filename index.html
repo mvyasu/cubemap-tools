@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Cubemap Tools</title>
+	<link href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5.14.0/index.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5.14.0/index.css" rel="stylesheet">
+	<style>
+		:root {
+			--main-button-accent: #73d0f5;
+			--main-button-disabled: #e7e7e7;
+			--main-button-inactive: #cacaca;
+			--main-button-active: #121415;
+			--main-button-hover: #000000;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		h3 {
+			margin-top: 0px;
+			margin-bottom: 10px;
+		}
+
+		h4 {
+			margin-top: 10px;
+			margin-bottom: 2px;
+		}
+
+		hr {
+			display: block;
+			height: 2px;
+			border: 0;
+			border-top: 1px solid var(--main-button-disabled);
+			margin: 1em 0;
+			padding: 0;
+		}
+
+		body {
+			margin: 0;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background: linear-gradient(135deg, #f0f2f5, #d9e2ec);
+			color: var(--main-button-active);
+		}
+
+		progress {
+			width: 100%;
+			padding-top: 10px;
+			padding-bottom: 10px;
+			margin-top: 16px;
+			margin-bottom: 6px;
+		}
+
+		button {
+			-webkit-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+
+		/* input[type="file"] {
+			display: none;
+		} */
+
+		select,
+		.custom-file-upload,
+		.roundButton {
+			padding: 6px 14px;
+			border: none;
+			border-radius: 100vmax;
+			background: var(--main-button-inactive);
+			color: var(--main-button-active);
+			cursor: pointer;
+			font-size: 14px;
+			font-weight: bold;
+			min-height: 32px;
+		}
+
+		/* selector */
+		select,
+		::picker(select) {
+			appearance: base-select;
+			/* -webkit-appearance: none;
+    		-moz-appearance: none; */
+		}
+
+		label {
+			width: fit-content;
+			align-self: center;
+		}
+
+		select {
+			flex: 1;
+			background: #eeeeee;
+			/* padding: 10px; */
+			padding-left: 10px;
+			padding-right: 10px;
+			transition: 0.4s;
+			min-height: 32px;
+			/* border-radius: 12px; */
+		}
+
+		select:hover,
+		select:focus {
+			background: #dddddd;
+		}
+		select::picker-icon {
+			color: #999999;
+			transition: 0.4s rotate;
+		}
+		select:open::picker-icon {
+			rotate: 180deg;
+		}
+		::picker(select) {
+			border: none;
+		}
+		option {
+			display: flex;
+			justify-content: flex-start;
+			backdrop-filter: blur(10px);
+			background: #eeeeee;
+			padding: 8px;
+			transition: 0.4s;
+		}
+		option:first-of-type {
+			border-radius: 8px 8px 0 0;
+		}
+
+		option:last-of-type {
+			border-radius: 0 0 8px 8px;
+		}
+
+		option:not(option:last-of-type) {
+			border-bottom: none;
+		}
+		option:nth-of-type(odd) {
+			background: white;
+		}
+
+		option:hover,
+		option:focus {
+			background: var(--main-button-accent);
+		}
+		option .icon {
+			font-size: 1.6rem;
+			text-box: trim-both cap alphabetic;
+		}
+		selectedcontent .icon {
+			display: none;
+		}
+		option:checked {
+			font-weight: bold;
+		}
+		::picker(select) {
+			opacity: 0;
+			transition: all 0.4s allow-discrete;
+		}
+		::picker(select):popover-open {
+			opacity: 1;
+		}
+		@starting-style {
+		::picker(select):popover-open {
+			opacity: 0;
+		}
+		}
+		::picker(select) {
+			top: calc(anchor(bottom) + 1px);
+			left: anchor(10%);
+		}
+
+		/* other */
+
+		.custom-file-upload.active,
+		.roundButton.active {
+			background: var(--main-button-active);
+			color: var(--main-button-disabled);
+		}
+
+		.custom-file-upload:hover,
+		.roundButton:hover {
+			background: var(--main-button-hover);
+			color: var(--main-button-disabled);
+		}
+
+		.roundButton:disabled {
+			background: var(--main-button-disabled);
+			color: var(--main-button-inactive);
+			cursor: not-allowed;
+		}
+
+		#toggleViewBtn {
+			position: fixed;
+			top: 15px;
+			left: 15px;
+			z-index: 2000;
+			padding: 8px 16px;
+		}
+
+		/* Viewer page */
+		#viewerPage {
+			width: 100vw;
+			height: 100vh;
+			position: relative;
+		}
+
+		#viewer {
+			width: 100%;
+			height: 100%;
+		}
+
+		/* Upload container (shared style with viewer) */
+		.glass-box {
+			background: #ffffffcc;
+			backdrop-filter: blur(10px);
+			padding: 15px 20px;
+			border-radius: 15px;
+			box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+			border: 1px solid rgba(255, 255, 255, 0.6);
+		}
+
+		#uploadContainer {
+			position: absolute;
+			top: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 100;
+			text-align: center;
+			max-width: 420px;
+			min-width: min(100% - 60px, 300px);
+		}
+
+		.converterContainer {
+			max-width: 800;
+			width: 80%;
+		}
+
+		#uploadTabs {
+			display: flex;
+			gap: 10px;
+			justify-content: center;
+			margin-bottom: 12px;
+		}
+
+		.upload-panel {
+			display: none;
+		}
+
+		.upload-panel.active {
+			display: block;
+		}
+
+		.upload-panel button {
+			margin-top: 8px;
+			padding: 6px 14px;
+		}
+
+		.upload-panel input[type="file"],
+		.upload-panel input[type="text"] {
+			padding: 6px;
+			border-radius: 8px;
+			border: 1px solid #ccc;
+			cursor: pointer;
+			font-size: 14px;
+			width: 100%;
+			box-sizing: border-box;
+		}
+
+		.upload-panel input[type="text"] {
+			cursor: text;
+			margin-bottom: 8px;
+		}
+
+		.upload-panel ul {
+			text-align: left;
+			margin: 8px 0 12px;
+			padding-left: 20px;
+			font-size: 12px;
+			color: #666;
+			line-height: 1.4;
+		}
+
+		/* Custom tooltip style */
+		.psv-custom-tooltip,
+		.psv-custom-tooltip>* {
+			background: none;
+			box-shadow: none;
+		}
+
+		.psv-custom-tooltip * {
+			background: #ffffffcc;
+			backdrop-filter: blur(10px);
+			border-radius: 15px;
+			box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+			border: 1px solid rgba(255, 255, 255, 0.6);
+			color: var(--main-button-active);
+			margin-bottom: 6px;
+		}
+
+		.psv-navbar {
+			position: absolute !important;
+			bottom: 20px !important;
+			left: 50% !important;
+			transform: translateX(-50%) !important;
+			display: flex;
+			gap: 12px;
+			background: #ffffffcc;
+			backdrop-filter: blur(10px);
+			padding: 10px;
+			border-radius: 15px;
+			box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+			border: 1px solid rgba(255, 255, 255, 0.6);
+			z-index: 100;
+			max-width: max-content;
+			max-height: max-content;
+		}
+
+		.psv-button {
+			color: var(--main-button-active);
+		}
+
+		.psv-markers-button svg {
+			background-color: var(--main-button-active);
+			mask-image: url("assets/Surfaces.svg");
+		}
+
+		.psv-markers-button svg path {
+			display: none;
+		}
+
+		.psv-button--active {
+			background-color: var(--main-button-inactive);
+			border-radius: 7px;
+		}
+
+		.psv-zoom-range-handle {
+			background: var(--main-button-active);
+			height: 10px;
+			width: 10px;
+		}
+
+		.psv-zoom-range-line {
+			background: rgba(0, 0, 0, 0.5);
+			height: 4px;
+		}
+
+		/* Converter page layout */
+		#convertPage {
+			display: none;
+			padding: 20px;
+		}
+
+		#convertContainer {
+			max-width: 900px;
+			margin: 60px auto;
+			text-align: center;
+		}
+
+		#convertContainer h2 {
+			margin-bottom: 20px;
+		}
+
+		#convertContainer .canvas-grid {
+			display: grid;
+			gap: 12px;
+			justify-content: center;
+		}
+
+		#convertContainer canvas {
+			max-width: 100%;
+			border-radius: 12px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+			cursor: pointer;
+		}
+
+		.cubemapFace {
+			width: 100%;
+			height: auto;
+		}
+
+		#canvasOut,
+		#cubeOutput {
+			max-width: 100%;
+			max-height: 100%;
+			display: block;      /* removes inline spacing issues */
+			margin: 0 auto;      /* center horizontally */
+			box-sizing: border-box;
+		}
+
+		@media (max-width: 800px) {
+			#uploadContainer {
+				/* dynamically move down based on toggle button's height */
+				top: calc(15px + var(--toggleBtnHeight, 40px) + 15px);
+				/* 15px top + button height + 15px margin */
+			}
+
+			#toggleViewBtn {
+				left: 50%;
+				transform: translateX(-50%);
+				/* center horizontally */
+			}
+		}
+
+		@media (max-width: 350px) {
+			#toggleViewBtn {
+				width: calc(100% - 20px);
+			}
+		}
+	</style>
+	<svg id="patterns" style="position: absolute; top: -1000px">
+		<defs>
+			<pattern id="diagnol" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+				<path d="M 0 0 L 0 10" stroke="white" opacity="0.2" stroke-width="4" />
+			</pattern>
+			<!--
+			<pattern id="SkyboxBk" x="512" y="512" width="1024" height="1024" patternUnits="userSpaceOnUse">
+				<image href="assets/SkyboxBk.png" width="1024" height="1024" />
+			</pattern>
+			-->
+		</defs>
+	</svg>
+</head>
+
+<body>
+	<!-- Toggle Button -->
+	<button id="toggleViewBtn" class="roundButton">Switch to Converter</button>
+
+	<!-- upload container  -->
+	<div id="uploadContainer" class="glass-box">
+		<div id="uploadTabs">
+			<button id="fileTab" class="active roundButton">File</button>
+			<button id="urlTab" class="roundButton">URL</button>
+		</div>
+
+		<div id="filePanel" class="upload-panel active">
+			<ul>
+				<li>1 image (1:2 Panorama)</li>
+				<li>6 images (Cubemap: Rt, Ft, Lf, Bk, Up, Dn)</li>
+			</ul>
+			<!-- <label for="fileInput" class="custom-file-upload">
+				Upload Image(s)
+			</label> -->
+			<input type="file" id="fileInput" multiple accept="image/*"/>
+		</div>
+
+		<div id="urlPanel" class="upload-panel">
+			<ul>
+				<li>1 URL (1:2 Panorama)</li>
+				<li>6 URLs (Cubemap: Rt, Ft, Lf, Bk, Up, Dn)</li>
+			</ul>
+			<input type="text" id="urlInput" placeholder="1 URL or 6 comma-separated URLs">
+			<button id="loadUrlBtn" class="roundButton">Load from URL</button>
+		</div>
+
+		<div id="converterPanel" class="upload-panel">
+			<hr/>
+
+			<h3>Cubemap ↔ Panorama Converter</h3>
+
+			<label for="resolution"></label>
+			<select id="resolution"></select>
+
+			<!-- <progress id="progress" value="0" max="1"></progress> -->
+			<button id="generateBtn" class="roundButton">
+				Convert
+			</button>
+			<progress id="progress" value="0" max="1"></progress>
+
+			<hr/>
+
+			<!-- Panorama output -->
+			<canvas id="canvasOut"></canvas>
+
+			<!-- Cubemap output (6 canvases) -->
+			<div id="cubeOutput"></div>
+		</div>
+	</div>
+
+	<!-- Viewer Page -->
+	<div id="viewerPage">
+		<div id="viewer"></div>
+	</div>
+
+	<!-- Converter Page -->
+	<div id="convertPage">
+		<!-- <div id="convertContainer" class="glass-box">
+			<h2>Cubemap ↔ Panorama Converter</h2>
+			<input type="file" id="convertFiles" multiple accept="image/*">
+			<p style="font-size: 12px; color:#666;">Upload 6 cubemap faces or 1 panorama image</p>
+			<div id="convertOutput" class="canvas-grid"></div>
+		</div> -->
+	</div>
+
+	<script type="module">
+		const viewerPage = document.getElementById('viewerPage');
+		const convertPage = document.getElementById('convertPage');
+		const toggleBtn = document.getElementById('toggleViewBtn');
+
+		document.documentElement.style.setProperty('--toggleBtnHeight', `${toggleBtn.offsetHeight}px`);
+
+		/* ========== Routing logic ========== */
+
+		function showViewer(pushState = true) {
+			viewerPage.style.display = 'block';
+			convertPage.style.display = 'none';
+			toggleBtn.textContent = 'Switch to Converter';
+
+			document.getElementById('uploadContainer').classList.remove("converterContainer");
+
+			//document.getElementById('filePanel').style.display = 'block';
+			//document.getElementById('urlPanel').style.display = 'block';
+			document.getElementById('converterPanel').style.display = 'none';
+
+			if (pushState) {
+				const params = new URLSearchParams(window.location.search);
+				params.set('view', 'viewer'); // just update the view param
+				history.replaceState({}, '', '?' + params.toString());
+			}
+		}
+
+		function showConverter(pushState = true) {
+			viewerPage.style.display = 'none';
+			convertPage.style.display = 'block';
+			toggleBtn.textContent = 'Switch to Viewer';
+
+			document.getElementById('uploadContainer').classList.add("converterContainer");
+
+			//document.getElementById('filePanel').style.display = 'none';
+			//document.getElementById('urlPanel').style.display = 'none';
+			document.getElementById('converterPanel').style.display = 'block';
+
+			if (pushState) {
+				const params = new URLSearchParams(window.location.search);
+				params.set('view', 'convert');
+				history.replaceState({}, '', '?' + params.toString());
+			}
+		}
+
+		toggleBtn.addEventListener('click', () => {
+			if (viewerPage.style.display === 'block') {
+				showConverter();
+			} else {
+				showViewer();
+			}
+		});
+
+		function handleRoute() {
+			const params = new URLSearchParams(window.location.search);
+			const view = params.get('view');
+			if (view === 'convert') {
+				showConverter(true);
+			} else {
+				showViewer(true); // default to viewer
+			}
+		}
+
+		window.addEventListener("DOMContentLoaded", handleRoute);
+
+		/* ========== File helper ========== */
+		const fileInput = document.getElementById("fileInput")
+
+		function getCurrentFileInput() {
+			const params = new URLSearchParams(window.location.search);
+			if (params.has('panorama')) {
+				return [params.get('panorama')];
+			} else if (params.has('cubemap')) {
+				const urls = params.get('cubemap').split(',');
+				if (urls.length !== 6) {
+					alert("Cubemap requires exactly 6 image URLs");
+					return []; // WARNING: will return nothing
+				}
+				return urls
+			}
+
+			const uploadedFiles = Array.from(fileInput.files || []);
+			if (uploadedFiles.length == 1) {
+				return [uploadedFiles[0]];
+			} else if (uploadedFiles.length == 6) {
+				const faceKeys = ['Rt', 'Bk', 'Lf', 'Ft', 'Up', 'Dn'];
+				const filesMap = {};
+				uploadedFiles.forEach(file => {
+					const name = file.name.toLowerCase();
+					for (const key of faceKeys) {
+						if (name.includes(key.toLowerCase())) filesMap[key] = file;
+					}
+				});
+				for (const k of faceKeys) {
+					if (!filesMap[k]) {
+						alert(`Missing face: ${k}`);
+						return []; // WARNING: will return nothing
+					}
+				}
+				const urls = [
+					filesMap['Rt'],
+					filesMap['Ft'],
+					filesMap['Lf'],
+					filesMap['Bk'],
+					filesMap['Up'],
+					filesMap['Dn']
+					// URL.createObjectURL(filesMap['Rt']),
+					// URL.createObjectURL(filesMap['Ft']),
+					// URL.createObjectURL(filesMap['Lf']),
+					// URL.createObjectURL(filesMap['Bk']),
+					// URL.createObjectURL(filesMap['Up']),
+					// URL.createObjectURL(filesMap['Dn'])
+				];
+				return urls
+			}
+
+			return [];
+		}
+
+		/* ========== Viewer logic ========== */
+		import { Viewer } from 'https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5.14.0/+esm';
+		import { CubemapAdapter } from 'https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/cubemap-adapter@5.14.0/+esm';
+		import { MarkersPlugin } from 'https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5.14.0/+esm';
+		import { OverlaysPlugin } from 'https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/overlays-plugin@5.14.0/+esm';
+
+		{
+			let viewer;
+			let markersVisible = true;
+			const DEFAULT_PANORAMA = "assets/DefaultPanorama.png";
+
+			function createViewer(options) {
+				if (viewer) {
+					viewer.destroy();
+					viewer = null;
+				};
+
+				let faceMarkers = []; {
+					const deg2rad = d => (d * Math.PI) / 180;
+
+					const OFFSET = 9.75;
+
+					const CORNERS = {
+						FW_L_TOP: [-45, 45 - OFFSET],
+						FW_R_TOP: [45, 45 - OFFSET],
+						FW_L_BOTTOM: [-45, -45 + OFFSET],
+						FW_R_BOTTOM: [45, -45 + OFFSET],
+						BK_L_TOP: [-135, 45 - OFFSET],
+						BK_R_TOP: [135, 45 - OFFSET],
+						BK_L_BOTTOM: [-135, -45 + OFFSET],
+						BK_R_BOTTOM: [135, -45 + OFFSET],
+					}
+
+					const faces = [
+						{ id: 'SkyboxBk', baseColor: [255, 255, 0], corners: [CORNERS.FW_R_BOTTOM, CORNERS.FW_R_TOP, CORNERS.BK_R_TOP, CORNERS.BK_R_BOTTOM] }, // yellow
+						{ id: 'SkyboxFt', baseColor: [0, 255, 0], corners: [CORNERS.FW_L_TOP, CORNERS.FW_L_BOTTOM, CORNERS.BK_L_BOTTOM, CORNERS.BK_L_TOP] }, // green
+						{ id: 'SkyboxLf', baseColor: [255, 0, 0], corners: [CORNERS.FW_L_TOP, CORNERS.FW_L_BOTTOM, CORNERS.FW_R_BOTTOM, CORNERS.FW_R_TOP] }, // red
+						{ id: 'SkyboxRt', baseColor: [0, 0, 255], corners: [CORNERS.BK_L_TOP, CORNERS.BK_L_BOTTOM, CORNERS.BK_R_BOTTOM, CORNERS.BK_R_TOP] }, // blue
+						{ id: 'SkyboxUp', baseColor: [255, 179, 0], corners: [CORNERS.FW_L_TOP, CORNERS.FW_R_TOP, CORNERS.BK_R_TOP, CORNERS.BK_L_TOP] }, // orange
+						{ id: 'SkyboxDn', baseColor: [255, 0, 255], corners: [CORNERS.FW_L_BOTTOM, CORNERS.FW_R_BOTTOM, CORNERS.BK_R_BOTTOM, CORNERS.BK_L_BOTTOM] }, // pink
+					];
+
+					const faceSize = deg2rad(90); // each face spans 90° x 90°
+					const half = faceSize / 2;
+
+					faces.forEach(face => {
+						let [r, g, b] = face.baseColor;
+
+						let quad = [];
+						for (const corner of face.corners) {
+							quad.push([
+								deg2rad(corner[0]),
+								deg2rad(corner[1])
+							])
+						};
+
+						faceMarkers.push({
+							id: `${face.id}_Label`,
+							polygon: quad,
+							svgStyle: {
+								fill: `url(#diagnol)`,
+							},
+						});
+
+						faceMarkers.push({
+							id: face.id,
+							polygon: quad,
+							svgStyle: {
+								fill: `rgba(${r}, ${g}, ${b}, 0.25)`,    // semi-transparent fill
+								stroke: `rgba(${r}, ${g}, ${b}, 0.9)`,   // darker stroke
+								strokeWidth: '5px',
+							},
+							tooltip: {
+								content: face.id,
+								className: 'psv-custom-tooltip',
+							}
+						});
+					});
+				};
+
+				let optionsToUse = {
+					container: document.getElementById('viewer'),
+					navbar: ['zoom', 'fullscreen', 'markers', 'overlays'],
+					touchmoveTwoFingers: true,
+					defaultZoomLvl: 0,
+					defaultYaw: Math.PI,
+					minFov: 20,
+					maxFov: 120,
+					zoomSpeed: 1.5,
+					moveInertia: 0.95,
+					plugins: [
+						MarkersPlugin.withConfig({
+							markers: faceMarkers
+						}),
+					],
+					panoData: {
+						poseHeading: options.adapter==CubemapAdapter ? 0 : -90,
+					}
+				};
+				Object.assign(optionsToUse, options);
+
+				viewer = new Viewer(optionsToUse);
+
+				viewer.addEventListener('ready', function () {
+					viewer.navbar.getButton('markers').toggleActive(false);
+					viewer.getPlugin('markers').hideAllMarkers();
+				}, { once: true });
+
+
+				return viewer
+			};
+
+			function loadPanorama(url, updateUrl = false) {
+				createViewer({ panorama: url });
+
+				const params = new URLSearchParams(window.location.search);
+				params.delete('cubemap');
+
+				if (updateUrl) {
+					// preserve existing query params
+					params.set('panorama', url); // add or update the panorama param
+					selectTab("url");
+				} else {
+					params.delete('panorama');
+				}
+
+				history.replaceState(null, '', '?' + params.toString());
+				
+				const fileInputChanged = new CustomEvent('fileInputChanged', {detail: getCurrentFileInput()});
+				document.dispatchEvent(fileInputChanged);
+			};
+
+			function loadCubemap(urls, updateUrl = false) {
+				const cubeImages = {
+					back: urls[0],
+					left: urls[1],
+					front: urls[2],
+					right: urls[3],
+					top: urls[4],
+					bottom: urls[5],
+				};
+
+				const newViewer = createViewer({
+					adapter: CubemapAdapter,
+					panorama: cubeImages,
+				});
+
+				const params = new URLSearchParams(window.location.search);
+				params.delete('panorama');
+
+				if (updateUrl) {
+					params.set('cubemap', urls.join(','));
+					selectTab("url");
+				} else {
+					params.delete('cubemap');
+				};
+
+				history.replaceState(null, '', '?' + params.toString());
+				
+				const fileInputChanged = new CustomEvent('fileInputChanged', {detail: getCurrentFileInput()});
+				document.dispatchEvent(fileInputChanged);
+			};
+
+			function initFromURL() {
+				const params = new URLSearchParams(window.location.search);
+
+				if (params.has('panorama')) {
+					const url = params.get('panorama');
+					document.getElementById('urlInput').value = url;
+					loadPanorama(url, true);
+				} else if (params.has('cubemap')) {
+					const urls = params.get('cubemap').split(',');
+					if (urls.length !== 6) {
+						alert("Cubemap requires exactly 6 image URLs");
+						return;
+					}
+					document.getElementById('urlInput').value = params.get('cubemap');
+					loadCubemap(urls, true);
+				} else {
+					loadPanorama(DEFAULT_PANORAMA);
+				};
+			};
+
+			initFromURL();
+
+			function selectTab(tab) {
+				// const params = new URLSearchParams(window.location.search);
+				// params.set('selected', tab);
+
+				document.getElementById("fileTab").classList.remove("active");
+				document.getElementById("urlTab").classList.remove("active");
+				document.getElementById("filePanel").classList.remove("active");
+				document.getElementById("urlPanel").classList.remove("active");
+				
+
+				if (tab === "file") {
+					document.getElementById("fileTab").classList.add("active");
+					document.getElementById("filePanel").classList.add("active");
+				} else {
+					document.getElementById("urlTab").classList.add("active");
+					document.getElementById("urlPanel").classList.add("active");
+				};
+
+				// history.replaceState({}, '', '?' + params.toString());
+			};
+
+			document.getElementById("fileTab").addEventListener("click", () => selectTab("file"));
+			document.getElementById("urlTab").addEventListener("click", () => selectTab("url"));
+
+			fileInput.addEventListener('change', (event) => {
+				const files = event.target.files;
+				if (files.length === 1) {
+					loadPanorama(URL.createObjectURL(files[0]));
+					selectTab("file");
+				} else if (files.length === 6) {
+					const faceKeys = ['Rt', 'Bk', 'Lf', 'Ft', 'Up', 'Dn'];
+					const filesMap = {};
+					Array.from(files).forEach(file => {
+						const name = file.name.toLowerCase();
+						for (const key of faceKeys) {
+							if (name.includes(key.toLowerCase())) filesMap[key] = file;
+						}
+					});
+					for (const k of faceKeys) {
+						if (!filesMap[k]) { alert(`Missing face: ${k}`); return; }
+					}
+					const urls = [
+						URL.createObjectURL(filesMap['Rt']),
+						URL.createObjectURL(filesMap['Ft']),
+						URL.createObjectURL(filesMap['Lf']),
+						URL.createObjectURL(filesMap['Bk']),
+						URL.createObjectURL(filesMap['Up']),
+						URL.createObjectURL(filesMap['Dn']),
+					];
+					loadCubemap(urls);
+					selectTab("file");
+					history.replaceState(null, '', window.location.pathname);
+				} else {
+					fileInput.value = null;
+					alert("Please upload either 1 panorama image or exactly 6 cubemap images!");
+				};
+			});
+
+			document.getElementById('loadUrlBtn').addEventListener('click', () => {
+				const input = document.getElementById('urlInput').value.trim();
+				if (!input) return;
+				const urls = input.split(',').map(u => u.trim());
+				if (urls.length === 1) 
+					loadPanorama(urls[0], true);
+				else if (urls.length === 6)
+					loadCubemap(urls, true);
+				else
+					alert("Enter either 1 panorama URL or 6 comma-separated cubemap URLs.");
+			});
+		};
+
+		/* ========== Converter logic ========== */
+		import { cubemapToEquirectangular } from './js/cubemap-to-panorama.js';
+		import { panoramaToCubemap } from './js/panorama-to-cubemap.js';
+
+		{
+			const cubeOutput = document.getElementById('cubeOutput');
+			const progress = document.getElementById('progress');
+			const resolutionSelect = document.getElementById('resolution');
+			const generateBtn = document.getElementById('generateBtn');
+
+			let canvasOut = document.getElementById('canvasOut');
+
+			const tokenToFace = {
+				'rt': 'back',
+				'ft': 'left',
+				'lf': 'front',
+				'bk': 'right',
+				'up': 'top',
+				'dn': 'bottom'
+			};
+
+			// Face labels for cross layout
+			const faceLabels = {
+				right: 'SkyboxFt',
+				left: 'SkyboxBk',
+				front: 'SkyboxRt',
+				back: 'SkyboxLf',
+				top: 'SkyboxUp',
+				bottom: 'SkyboxDn'
+			};
+
+			function updateGenerateButton() {
+				const currentFiles = getCurrentFileInput();
+
+				if (currentFiles.length == 1 || currentFiles.length == 6) {
+					generateBtn.disabled = false;
+				} else {
+					generateBtn.disabled = true;
+				}
+			}
+
+			// Update resolution dropdown dynamically
+			function updateResolutions(files = null, init = false) {
+				const currentFiles = files || getCurrentFileInput();
+				
+				updateGenerateButton();
+
+				if (currentFiles.length == 6) {
+					resolutionSelect.innerHTML = `
+						<option value="1440x720">1440 x 720 - Performance</option>
+						<option value="2048x1024" selected>2048 x 1024 - Balanced</option>
+						<option value="4096x2048">4096 x 2048 - Detailed</option>
+						<option value="8192x4096">8192 x 4096 - Overkill</option>
+					`;
+				} else if (currentFiles.length == 1 || init){
+					resolutionSelect.innerHTML = `
+						<option value="512x512">512x512 - Performance</option>
+						<option value="1024x1024" selected>1024x1024 - Balanced</option>
+						<option value="2048x2048">2048x2048 - Detailed</option>
+						<option value="4096x4096">4096x4096 - Overkill</option>
+					`;
+				}
+			}
+
+
+			
+			//fileInput.addEventListener('change', (event) => updateResolutions(event.target.files));
+			document.addEventListener('fileInputChanged', () => updateResolutions());
+			updateResolutions(null, true);
+			//updateGenerateButton();
+
+			progress.style.display = 'none';
+			canvasOut.style.display = 'none';
+
+			generateBtn.addEventListener('click', async () => {
+				const currentFiles = getCurrentFileInput();
+				const [w, h] = resolutionSelect.value.split('x').map(Number);
+
+				// clear outputs
+				canvasOut.style.display = 'none';
+				cubeOutput.innerHTML = '';
+
+				if (currentFiles.length == 1) { //Panorama to Cubemap
+					const panoImg = await loadImageFromFile(currentFiles[0]);
+
+					canvasOut.style.display = 'none';
+
+					const faceSize = w; // square faces
+					progress.style.display = 'block';
+					const faces = await panoramaToCubemap({
+						panorama: panoImg, faceSize,
+						onProgress: (p) => progress.value = p
+					});
+					progress.style.display = 'none';
+
+					// Append canvases in correct cross order
+					const crossOrder = ['top', 'left', 'front', 'right', 'back', 'bottom'];
+					const fileName = getFileName(currentFiles[0]);
+
+					for (const key of crossOrder) {
+						const wrapper = document.createElement('div');
+						wrapper.className = 'cube-face';
+						wrapper.style.gridArea = key; // aligns properly in the CSS grid
+
+						const label = document.createElement('h4');
+						label.textContent = faceLabels[key];
+
+						const c = document.createElement('canvas');
+						c.width = faces[key].width;
+						c.height = faces[key].height;
+						c.classList = "cubemapFace"
+						c.getContext('2d').drawImage(faces[key], 0, 0);
+
+						// Add click-to-download without breaking layout
+						c.style.cursor = "pointer";
+						c.addEventListener('click', () => {
+							c.toBlob((blob) => {
+								const a = document.createElement('a');
+								a.href = URL.createObjectURL(blob);
+								a.download = `${fileName}_${faceLabels[key]}.png`;
+								document.body.appendChild(a);
+								a.click();
+								document.body.removeChild(a);
+							});
+						});
+
+						wrapper.appendChild(label);
+						wrapper.appendChild(c);
+						cubeOutput.appendChild(wrapper);
+					}
+				} else if (currentFiles.length == 6) { //Cubemap to Panorama
+					const faceMap = {};
+					for (const file of currentFiles) {
+						const name = (getFileName(file) || '').toLowerCase();
+						for (const token in tokenToFace) {
+							if (name.includes(token) && !faceMap[tokenToFace[token]]) {
+								faceMap[tokenToFace[token]] = await loadImageFromFile(file);
+								break;
+							}
+						}
+					}
+					
+					const order = ["back", "left", "front", "right", "top", "bottom"]
+
+					if (Object.keys(faceMap).length < 6) {
+						for (const [index, file] of currentFiles.entries()) {
+							faceMap[order[index]] = await loadImageFromFile(file);
+						}
+					}
+
+					const missing = order.filter(k => !faceMap[k]);
+					if (missing.length) return alert('Missing faces: ' + missing.join(', '));
+
+					progress.style.display = 'block';
+					const out = await cubemapToEquirectangular({
+						faces: faceMap, width: w, height: h,
+						onProgress: (p) => progress.value = p
+					});
+					progress.style.display = 'none';
+
+					// Remove any previous click listeners
+					canvasOut.replaceWith(canvasOut.cloneNode(true));
+					const newCanvasOut = document.getElementById('canvasOut');
+
+					// Draw the panorama
+					newCanvasOut.width = out.width;
+					newCanvasOut.height = out.height;
+					newCanvasOut.getContext('2d').drawImage(out, 0, 0);
+					newCanvasOut.style.display = 'block';
+					newCanvasOut.style.cursor = 'pointer';
+
+					canvasOut = newCanvasOut
+
+					let baseFileName = "output";
+
+					// Add click-to-download (once)
+					newCanvasOut.addEventListener('click', () => {
+						newCanvasOut.toBlob(
+							(blob) => {
+								const a = document.createElement('a');
+								a.href = URL.createObjectURL(blob);
+								a.download = `${baseFileName}_panorama.png`;
+								document.body.appendChild(a);
+								a.click();
+								document.body.removeChild(a);
+							});
+					});
+				}
+			});
+
+			function getFileName(input) {
+				let name = "unknown";
+
+				if (input instanceof File || input instanceof Blob) {
+					name = input.name || "unknown";
+				} else if (typeof input === "string") {
+					try {
+						const url = new URL(input);
+						const parts = url.pathname.split('/');
+						name = parts[parts.length - 1] || "unknown";
+					} catch (e) {
+						const parts = input.split('/');
+						name = parts[parts.length - 1] || "unknown";
+					}
+				}
+
+				// Remove extension using regex
+				return name.replace(/\.[^/.]+$/, "");
+			}
+
+			async function loadImageFromFile(input) {
+				let blob;
+
+				if (input instanceof File || input instanceof Blob) {
+					// Local file
+					blob = input;
+				} else if (typeof input === "string") {
+					// URL
+					const response = await fetch(input);
+					if (!response.ok) throw new Error(`Failed to fetch image: ${input}`);
+					blob = await response.blob();
+				} else {
+					throw new Error("Invalid input type. Must be a File, Blob, or URL string.");
+				}
+
+				return new Promise((resolve, reject) => {
+					const url = URL.createObjectURL(blob);
+					const img = new Image();
+					img.onload = () => {
+						URL.revokeObjectURL(url);
+						resolve(img);
+					};
+					img.onerror = () => {
+						URL.revokeObjectURL(url);
+						reject(new Error('Image load error'));
+					};
+					img.src = url;
+				});
+			}
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg class="psv-button-svg" width="100%" height="100%" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(4,0,0,0.645161,20,2.58065)">
+        <path fill="currentColor" d="M-5,27L-5,-4L0,-4L0,27L-5,27ZM-2.864,0.133L-3.803,0.133L-0.667,19.579L-0.667,13.755L-2.864,0.133ZM-0.667,7.179L-0.667,0.133L-1.803,0.133L-0.667,7.179ZM-4.333,3.421L-4.333,9.245L-2.136,22.867L-1.197,22.867L-4.333,3.421ZM-4.333,15.821L-4.333,22.867L-3.197,22.867L-4.333,15.821Z"/>
+    </g>
+</svg>
