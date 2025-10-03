@@ -4,6 +4,7 @@
 <head>
 	<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="/assets/favicon.png" type="image/png">
 	<title>Cubemap Tools</title>
 	<link href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5.14.0/index.min.css" rel="stylesheet">
 	<link href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5.14.0/index.css" rel="stylesheet">
@@ -322,7 +323,7 @@
 
 		.psv-markers-button svg {
 			background-color: var(--main-button-active);
-			mask-image: url("assets/Surfaces.svg");
+			mask-image: url("assets/surfaces-icon.svg");
 		}
 
 		.psv-markers-button svg path {
@@ -493,6 +494,8 @@
 	</div>
 
 	<script type="module">
+		let generating = false;
+
 		const viewerPage = document.getElementById('viewerPage');
 		const convertPage = document.getElementById('convertPage');
 		const toggleBtn = document.getElementById('toggleViewBtn');
@@ -620,7 +623,7 @@
 		{
 			let viewer;
 			let markersVisible = true;
-			const DEFAULT_PANORAMA = "assets/DefaultPanorama.png";
+			const DEFAULT_PANORAMA = "assets/default-panorama.png";
 
 			function createViewer(options) {
 				if (viewer) {
@@ -901,7 +904,7 @@
 			function updateGenerateButton() {
 				const currentFiles = getCurrentFileInput();
 
-				if (currentFiles.length == 1 || currentFiles.length == 6) {
+				if ((currentFiles.length == 1 || currentFiles.length == 6) && !generating) {
 					generateBtn.disabled = false;
 				} else {
 					generateBtn.disabled = true;
@@ -941,7 +944,16 @@
 			progress.style.display = 'none';
 			canvasOut.style.display = 'none';
 
+			
 			generateBtn.addEventListener('click', async () => {
+				if (generating) {
+					return;
+				};
+
+				generating = true;
+
+				updateGenerateButton();
+
 				const currentFiles = getCurrentFileInput();
 				const [w, h] = resolutionSelect.value.split('x').map(Number);
 
@@ -1055,6 +1067,9 @@
 							});
 					});
 				}
+
+				generating = false;
+				updateGenerateButton();
 			});
 
 			function getFileName(input) {
